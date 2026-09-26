@@ -17,6 +17,28 @@ export const DEFAULT_SETTINGS: AppSettings = {
   prizes: ['参与奖', '三等奖', '二等奖', '一等奖'],
 };
 
+/** 奖项预设清洗：去空白、去空串、去重（保持原顺序） */
+export function normalizePrizes(list: string[]): string[] {
+  const seen = new Set<string>();
+  const out: string[] = [];
+  for (const raw of list) {
+    const p = raw.trim();
+    if (!p || seen.has(p)) continue;
+    seen.add(p);
+    out.push(p);
+  }
+  return out;
+}
+
+/** 逐段合并设置：未提供的段落保留原值，避免互相覆盖 */
+function mergeSettings(cur: AppSettings, patch: Partial<AppSettings>): AppSettings {
+  return {
+    event: { ...cur.event, ...patch.event },
+    print: { ...cur.print, ...patch.print },
+    prizes: normalizePrizes(patch.prizes ?? cur.prizes),
+  };
+}
+
 export interface AppState {
   ready: boolean;
   riddles: Riddle[];
@@ -68,7 +90,7 @@ class AppStore {
         this.state.riddles = riddles.sort((a, b) => a.no - b.no);
         this.state.records = records.sort((a, b) => b.at - a.at);
         if (settings) {
-          this.state.settings = { ...DEFAULT_SETTINGS, ...settings } as AppSettings;
+          this.state.settings = mergeSettings(DEFAULT_SETTINGS, settings);
         }
         this.state.ctx = ctx;
         this.state.ready = true;
@@ -221,7 +243,7 @@ class AppStore {
 
   // ---- 设置 ----
   async saveSettings(patch: Partial<AppSettings>): Promise<void> {
-    this.state.settings = { ...DEFAULT_SETTINGS, ...patch } as AppSettings;
+    this.state.settings = mergeSettings(this.state.settings, patch);
     await idb.setKV(KV_SETTINGS, this.state.settings);
     this.emit();
   }

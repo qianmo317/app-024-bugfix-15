@@ -17,7 +17,10 @@ export function Settings() {
   const savePrint = () => void store.saveSettings({ print: pr }).then(() => setNotice('打印默认已保存'));
 
   const addPrize = () => {
-    void store.saveSettings({ prizes: [...prizes, newPrize] });
+    const name = newPrize.trim();
+    if (!name) { setNotice('奖项名不能为空'); return; }
+    if (prizes.includes(name)) { setNotice(`奖项「${name}」已存在，未重复添加`); return; }
+    void store.saveSettings({ prizes: [...prizes, name] });
     setNewPrize('');
   };
   const delPrize = (p: string) => void store.saveSettings({ prizes: prizes.filter((x) => x !== p) });
@@ -85,8 +88,8 @@ export function Settings() {
               </select>
             </label>
           </div>
-          <label className="field"><span>落款文字</span>
-            <input className="input" value={pr.hostLine} onChange={(e) => setPr({ ...pr, hostLine: e.target.value })} />
+          <label className="field"><span>落款文字（留空则用主办方「{event.host.trim() || '未填写'}」）</span>
+            <input className="input" value={pr.hostLine} onChange={(e) => setPr({ ...pr, hostLine: e.target.value })} placeholder="留空则打印主办方" />
           </label>
           <button className="btn btn-primary" onClick={savePrint}>保存打印默认</button>
         </div>

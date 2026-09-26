@@ -65,6 +65,11 @@ export function pageCount(total: number, perPage: number): number {
   return Math.max(1, Math.ceil(total / perPage));
 }
 
+/** 谜条落款：打印默认落款留空时回退到活动信息里的主办方 */
+export function effectiveHostLine(hostLine: string, host: string): string {
+  return hostLine.trim() || host.trim();
+}
+
 function round2(n: number): number {
   return Math.round(n * 100) / 100;
 }
