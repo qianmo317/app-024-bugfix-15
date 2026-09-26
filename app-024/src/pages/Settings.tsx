@@ -17,7 +17,10 @@ export function Settings() {
   const savePrint = () => void store.saveSettings({ print: pr }).then(() => setNotice('打印默认已保存'));
 
   const addPrize = () => {
-    void store.saveSettings({ prizes: [...prizes, newPrize] });
+    const name = newPrize.trim();
+    if (!name) { setNewPrize(''); return; }
+    if (prizes.includes(name)) { setNotice(`奖项「${name}」已存在，未重复添加`); setNewPrize(''); return; }
+    void store.saveSettings({ prizes: [...prizes, name] });
     setNewPrize('');
   };
   const delPrize = (p: string) => void store.saveSettings({ prizes: prizes.filter((x) => x !== p) });

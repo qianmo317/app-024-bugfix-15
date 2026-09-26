@@ -30,6 +30,9 @@ export function PrintPage() {
 
   const setPrint = (patch: Partial<typeof print>) => { void store.saveSettings({ print: { ...print, ...patch } }); };
 
+  // 落款未单独填写时，回退用活动信息里的主办方
+  const hostLine = print.hostLine.trim() ? print.hostLine : state.settings.event.host;
+
   return (
     <div>
       <div className="page-head no-print">
@@ -71,7 +74,8 @@ export function PrintPage() {
         </div>
         <label className="field">
           <span>主办方落款</span>
-          <input className="input" value={print.hostLine} onChange={(e) => setPrint({ hostLine: e.target.value })} placeholder="例：××社区工会 · 元宵灯会" />
+          <input className="input" value={hostLine} onChange={(e) => setPrint({ hostLine: e.target.value })}
+            placeholder={state.settings.event.host ? `默认用活动主办方：${state.settings.event.host}` : '例：××社区工会 · 元宵灯会'} />
         </label>
         {layout.adjusted && layout.warning && <p className="warn-text">{layout.warning}</p>}
         {!chosen.length && <p className="warn-text">没有可打印的谜条：先在谜库勾选，或把范围改为「全部」。</p>}
@@ -97,7 +101,7 @@ export function PrintPage() {
                     <div className="card-meta">
                       （{CATEGORY_LABEL[r.category]}{r.format !== 'none' ? ` · ${FORMAT_LABEL[r.format]}${r.formatNote ? `：${r.formatNote}` : ''}` : r.formatNote ? ` · ${r.formatNote}` : ''}）
                     </div>
-                    <div className="card-host">{print.hostLine}</div>
+                    <div className="card-host">{hostLine}</div>
                   </div>
                   {print.showAnswerSlip && (
                     <>
